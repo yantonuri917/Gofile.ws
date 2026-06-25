@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* PROTEKSI UI */
+        
         body {
             -webkit-user-select: none;
             -moz-user-select: none;
@@ -58,7 +58,8 @@
     </div>
 
     <script>
-       f66293b5c5fda05f',
+       ar atOptions = {
+                            'key' : '64e783bd557c30cbf66293b5c5fda05f',
                             'format' : 'iframe',
                             'height' : 90,
                             'width' : 728,
@@ -71,8 +72,7 @@
             doc.close();
         }
 
-        
-        function suntikIklanKontainer(parent, containerId, scriptSrc) {
+              function suntikIklanKontainer(parent, containerId, scriptSrc) {
             var wadah = document.createElement('div');
             wadah.className = "py-4 flex justify-center border-b border-gray-800/40";
             
@@ -220,26 +220,17 @@
             }
         }
 
+        
         function handleThumbnailClick(e, id, title) {
-            e.preventDefault();
-            e.stopPropagation();
+            e.preventDefault(); e.stopPropagation();
             const btn = document.getElementById('play-btn-' + id);
-            if (btn.getAttribute('data-status') !== 'playing') {
-                playVideo(id, title);
-            }
+            if (btn.getAttribute('data-status') !== 'playing') playVideo(id, title);
         }
 
         function handleButtonClick(e, id, title) {
-            e.preventDefault();
-            e.stopPropagation();
+            e.preventDefault(); e.stopPropagation();
             const btn = document.getElementById('play-btn-' + id);
-            const currentStatus = btn.getAttribute('data-status');
-            
-            if (currentStatus === 'playing') {
-                closeVideo(id);
-            } else {
-                playVideo(id, title);
-            }
+            if (btn.getAttribute('data-status') === 'playing') closeVideo(id); else playVideo(id, title);
         }
 
         function playVideo(id, title) {
@@ -253,8 +244,6 @@
             btn.className = "w-8 h-8 rounded bg-red-600 hover:bg-red-700 text-white border border-red-500 flex items-center justify-center text-xs shadow-md";
 
             miniBox.style.setProperty('display', 'none', 'important'); 
-            bigPlayerZone.classList.remove('hidden'); 
-
             bigPlayerZone.className = "w-full hidden mt-3 bg-black border border-gray-800 shadow-2xl rounded-lg overflow-hidden flex justify-center items-center h-auto";
             bigPlayerZone.classList.remove('hidden');
 
@@ -269,33 +258,18 @@
                 embed += embed.includes('?') ? "&autoplay=1" : "?autoplay=1";
                 bigPlayerZone.innerHTML = `<iframe src="${embed}" class="w-full h-full" frameborder="0" allow="autoplay" allowfullscreen></iframe>`;
             } else {
-                bigPlayerZone.innerHTML = `
-                    <div class="w-full h-full min-h-[200px] flex flex-col items-center justify-center bg-gray-900 p-4">
-                        <p class="text-[11px] text-gray-400 mb-2">${title}</p>
-                        <a href="${fileUrl}" target="_blank" class="bg-blue-600 text-white text-[10px] py-1.5 px-3 rounded font-bold">Buka Sumber</a>
-                    </div>`;
+                bigPlayerZone.innerHTML = `<div class="w-full h-full min-h-[200px] flex flex-col items-center justify-center bg-gray-900 p-4"><p class="text-[11px] text-gray-400 mb-2">${title}</p><a href="${fileUrl}" target="_blank" class="bg-blue-600 text-white text-[10px] py-1.5 px-3 rounded font-bold">Buka Sumber</a></div>`;
             }
-
-            setTimeout(() => {
-                bigPlayerZone.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center'
-                });
-            }, 150);
+            setTimeout(() => { bigPlayerZone.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 150);
         }
 
         function closeVideo(id) {
             const btn = document.getElementById('play-btn-' + id);
             const miniBox = document.getElementById('mini-viewport-' + id);
             const bigPlayerZone = document.getElementById('expanded-zone-' + id);
-
-            bigPlayerZone.innerHTML = ""; 
-            bigPlayerZone.classList.add('hidden'); 
-
-            btn.setAttribute('data-status', 'paused');
-            btn.innerHTML = `<i class="fa-solid fa-play"></i>`; 
+            bigPlayerZone.innerHTML = ""; bigPlayerZone.classList.add('hidden'); 
+            btn.setAttribute('data-status', 'paused'); btn.innerHTML = `<i class="fa-solid fa-play"></i>`; 
             btn.className = "w-8 h-8 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700/80 flex items-center justify-center text-xs";
-            
             miniBox.style.setProperty('display', 'block', 'important'); 
         }
 
