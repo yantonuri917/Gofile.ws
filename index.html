@@ -20,17 +20,12 @@
         }
     </style>
 </head>
-<!-- Padding top ditingkatkan agar konten utama tidak tertutup iklan sticky atas -->
 <body class="bg-[#0b0f19] text-gray-200 min-h-screen flex flex-col items-center p-3 sm:p-6 pt-[120px]" oncontextmenu="return false;">
 
-    <!-- WADAH IKLAN STICKY ATAS (728x90) -->
     <div class="fixed top-0 left-0 right-0 w-full flex justify-center bg-[#0b0f19]/90 py-1.5 border-b border-gray-800/40 z-50 shadow-xl min-h-[95px] overflow-hidden">
-        <div id="wadah-iklan-sticky-atas" class="w-full max-w-[728px] h-[90px] flex items-center justify-center bg-transparent overflow-hidden">
-            <!-- Iklan disuntik via Javascript di bawah agar load lebih lancar -->
-        </div>
+        <div id="wadah-iklan-sticky-atas" class="w-full max-w-[728px] h-[90px] flex items-center justify-center bg-transparent overflow-hidden scale-90 sm:scale-100 origin-center"></div>
     </div>
 
-    <!-- KONTEN UTAMA LIST FOLDER -->
     <div class="max-w-3xl w-full bg-[#111827] rounded-xl p-4 sm:p-5 shadow-2xl border border-gray-800/80 mt-2 overflow-hidden">
         
         <div class="border-b border-gray-800 pb-4 mb-4">
@@ -63,21 +58,94 @@
     </div>
 
     <script>
-        05f',
-                'format' : 'iframe',
-                'height' : 90,
-                'width' : 728,
-                'params' : {}
-            };
+        const SUPABASE_URL = "https://ehhrvswzhirrnrqxmxae.supabase.co"; 
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoaHJ2c3d6aGlycm5ycXhteGFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMjg2NDcsImV4cCI6MjA5NTgwNDY0N30.75vZs3Rn6j7YSlInHpGDN39OGjhywcEBv8j-hawyOlY";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            const scriptIklan = document.createElement('script');
-            scriptIklan.type = "text/javascript";
-            scriptIklan.src = "https://braverybreezebinding.com/64e783bd557c30cbf66293b5c5fda05f/invoke.js";
-            
-            targetWadah.appendChild(scriptIklan);
+        // --- LOGIKA UTAMA: DETEKSI FORMAT DOMAIN.COM/SLUG DAN DOMAIN.COM/D/SLUG VIA ROUTER 404 ---
+        let videoSlug = "";
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // 1. Cek jika dialihkan oleh 404.html lewat query parameter ?p= atau ?redirect=
+        if (urlParams.has('p')) {
+            videoSlug = urlParams.get('p');
+        } else if (urlParams.has('redirect')) {
+            const cleanPath = urlParams.get('redirect').split('?')[0];
+            const segments = cleanPath.split('/').filter(Boolean);
+            videoSlug = segments[0] === 'd' ? segments[1] : segments.pop();
+        } else {
+            // 2. Cek jika dibaca langsung dari URL Path standar browser
+            const pathSegments = window.location.pathname.split('/').filter(Boolean);
+            if (pathSegments.length > 0) {
+                if (pathSegments[0] === 'd') {
+                    videoSlug = pathSegments[1]; // Menangkap slug dari format /d/slug
+                } else {
+                    videoSlug = pathSegments[pathSegments.length - 1]; // Menangkap slug dari format /slug
+                }
+            }
         }
 
-        
+        // Hapus extension jika tidak sengaja terbawa demi keamanan query database
+        if (videoSlug) {
+            videoSlug = videoSlug.replace('.html', '');
+        }
+
+        const folderTitleDisplay = document.getElementById('folder-title-display');
+        const folderDate = document.getElementById('folder-date');
+        const filesFeedContainer = document.getElementById('files-feed-container');
+        const fileCountSpan = document.getElementById('file-count');
+        const totalItemsFooter = document.getElementById('total-items-footer');
+
+        let videoUrlsCache = {};
+        const DOWNLOAD_REDIRECT_URL = "https://braverybreezebinding.com/dyu6kzr44?key=703bc4908bfdd21b148e4fe03f9810cb";
+
+        // PROTEKSI KEYBOARD
+        document.addEventListener('keydown', function(e) {
+            if (
+                e.key === 'F12' || 
+                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || 
+                (e.ctrlKey && e.key === 'u')
+            ) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // FUNGSI PASANG IKLAN STICKY ATAS (728x90) MURNI DI SCRIPT
+        function pasangIklanStickyAtas() {
+            const wadah = document.getElementById('wadah-iklan-sticky-atas');
+            if (!wadah) return;
+
+            const iframe = document.createElement('iframe');
+            iframe.width = "728";
+            iframe.height = "90";
+            iframe.frameBorder = "0";
+            iframe.scrolling = "no";
+            iframe.style.border = "none";
+            iframe.style.overflow = "hidden";
+            
+            wadah.appendChild(iframe);
+
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            doc.open();
+            doc.write(`
+                <body style="margin:0;padding:0;background:transparent;display:flex;justify-content:center;align-items:center;">
+                    <script type="text/javascript">
+                        var atOptions = {
+                            'key' : '64e783bd557c30cbf66293b5c5fda05f',
+                            'format' : 'iframe',
+                            'height' : 90,
+                            'width' : 728,
+                            'params' : {}
+                        };
+                    <\/script>
+                    <script type="text/javascript" src="https://braverybreezebinding.com/64e783bd557c30cbf66293b5c5fda05f/invoke.js"><\/script>
+                </body>
+            `);
+            doc.close();
+        }
+
+        // FUNGSI SUNTIK IKLAN SELA KONTANER DI LIST VIDEO
         function suntikIklanKontainer(parent, containerId, scriptSrc) {
             var wadah = document.createElement('div');
             wadah.className = "py-4 flex justify-center border-b border-gray-800/40";
@@ -162,7 +230,6 @@
 
                     card.innerHTML = `
                         <div class="flex items-start justify-between w-full gap-3">
-                            
                             <div class="flex items-center gap-2 flex-shrink-0 mt-1">
                                 <input type="checkbox" class="w-3.5 h-3.5 rounded bg-gray-900 border-gray-700 text-blue-600 focus:ring-0 cursor-pointer">
                                 <span class="text-blue-500 text-base"><i class="fa-solid fa-file-video"></i></span>
@@ -192,16 +259,13 @@
                                     <i class="fa-solid fa-ellipsis-vertical"></i>
                                 </button>
                             </div>
-
                         </div>
 
-                        <!-- KONTANER PEMUTAR: h-auto agar otomatis memanjang ke atas saat video portrait diputar -->
                         <div id="expanded-zone-${item.id}" class="w-full hidden mt-3 bg-black border border-gray-800 shadow-2xl rounded-lg overflow-hidden flex justify-center items-center h-auto"></div>
                     `;
 
                     filesFeedContainer.appendChild(card);
 
-                    
                     if (index === 0) {
                         suntikIklanKontainer(filesFeedContainer, "container-93737c813e604544d6d8768c743712d8", "https://braverybreezebinding.com/93737c813e604544d6d8768c743712d8/invoke.js");
                     }
@@ -265,13 +329,11 @@
             miniBox.style.setProperty('display', 'none', 'important'); 
             bigPlayerZone.classList.remove('hidden'); 
 
-            
             bigPlayerZone.className = "w-full hidden mt-3 bg-black border border-gray-800 shadow-2xl rounded-lg overflow-hidden flex justify-center items-center h-auto";
             bigPlayerZone.classList.remove('hidden');
 
             if (fileUrl.match(/\.(mp4|webm|ogg)/i) || fileUrl.includes('supabase.co/storage')) {
                 const playUrl = fileUrl.split('#')[0];
-                
                 bigPlayerZone.innerHTML = `<video controls autoplay playsinline controlsList="nodownload" oncontextmenu="return false;" class="w-full h-auto max-h-[80vh] bg-black select-none object-contain"><source src="${playUrl}" type="video/mp4"></video>`;
             } else if (fileUrl.includes('youtube.com') || fileUrl.includes('youtu.be')) {
                 bigPlayerZone.classList.add('aspect-video');
@@ -311,7 +373,7 @@
             miniBox.style.setProperty('display', 'block', 'important'); 
         }
 
-            pasangIklanStickyAtas();
+        pasangIklanStickyAtas();
         loadGofileFeed();
     </script>
 
