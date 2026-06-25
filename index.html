@@ -268,43 +268,51 @@
             }
         }
 
-        function playVideo(id, title) {
-            const btn = document.getElementById('play-btn-' + id);
-            const miniBox = document.getElementById('mini-viewport-' + id);
-            const bigPlayerZone = document.getElementById('expanded-zone-' + id);
-            const fileUrl = videoUrlsCache[id];
+       function playVideo(id, title) {
+    const btn = document.getElementById('play-btn-' + id);
+    const miniBox = document.getElementById('mini-viewport-' + id);
+    const bigPlayerZone = document.getElementById('expanded-zone-' + id);
+    const fileUrl = videoUrlsCache[id];
 
-            btn.setAttribute('data-status', 'playing');
-            btn.innerHTML = `<i class="fa-solid fa-xmark text-sm"></i>`; 
-            btn.className = "w-8 h-8 rounded bg-red-600 hover:bg-red-700 text-white border border-red-500 flex items-center justify-center text-xs shadow-md";
+    btn.setAttribute('data-status', 'playing');
+    btn.innerHTML = `<i class="fa-solid fa-xmark text-sm"></i>`; 
+    btn.className = "w-8 h-8 rounded bg-red-600 hover:bg-red-700 text-white border border-red-500 flex items-center justify-center text-xs shadow-md";
 
-            miniBox.style.setProperty('display', 'none', 'important'); 
-            bigPlayerZone.classList.remove('hidden'); 
+    miniBox.style.setProperty('display', 'none', 'important'); 
+    bigPlayerZone.classList.remove('hidden'); 
 
-            if (fileUrl.match(/\.(mp4|webm|ogg)/i) || fileUrl.includes('supabase.co/storage')) {
-                const playUrl = fileUrl.split('#')[0];
-                bigPlayerZone.innerHTML = `<video controls autoplay playsinline controlsList="nodownload" oncontextmenu="return false;" class="w-full h-full object-contain select-none"><source src="${playUrl}" type="video/mp4"></video>`;
-            } else if (fileUrl.includes('youtube.com') || fileUrl.includes('youtu.be')) {
-                let embed = fileUrl;
-                if(embed.includes('watch?v=')) embed = embed.replace('watch?v=', 'embed/');
-                if(embed.includes('youtu.be/')) embed = embed.replace('youtu.be/', 'youtube.com/embed/');
-                embed += embed.includes('?') ? "&autoplay=1" : "?autoplay=1";
-                bigPlayerZone.innerHTML = `<iframe src="${embed}" class="w-full h-full" frameborder="0" allow="autoplay" allowfullscreen></iframe>`;
-            } else {
-                bigPlayerZone.innerHTML = `
-                    <div class="w-full h-full flex flex-col items-center justify-center bg-gray-900 p-4">
-                        <p class="text-[11px] text-gray-400 mb-2">${title}</p>
-                        <a href="${fileUrl}" target="_blank" class="bg-blue-600 text-white text-[10px] py-1.5 px-3 rounded font-bold">Buka Sumber</a>
-                    </div>`;
-            }
+    // MODIFIKASI: Mengubah aspek rasio kontainer utama menjadi Portrait Penuh (9:16)
+    bigPlayerZone.className = "w-full hidden mt-3 bg-black border border-gray-800 shadow-2xl rounded-lg overflow-hidden flex justify-center items-center aspect-[9/16] max-h-[85vh]";
+    bigPlayerZone.classList.remove('hidden');
 
-            setTimeout(() => {
-                bigPlayerZone.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center'
-                });
-            }, 150);
-        }
+    if (fileUrl.match(/\.(mp4|webm|ogg)/i) || fileUrl.includes('supabase.co/storage')) {
+        const playUrl = fileUrl.split('#')[0];
+        // Menggunakan object-cover agar video portrait benar-benar memenuhi seluruh ruang kontainer tanpa sisa hitam di pinggir
+        bigPlayerZone.innerHTML = `<video controls autoplay playsinline controlsList="nodownload" oncontextmenu="return false;" class="w-full h-full object-cover bg-black select-none"><source src="${playUrl}" type="video/mp4"></video>`;
+    } else if (fileUrl.includes('youtube.com') || fileUrl.includes('youtu.be')) {
+        // Khusus link YouTube normal tetap menggunakan format landscape standar agar tidak rusak
+        bigPlayerZone.classList.remove('aspect-[9/16]', 'max-h-[85vh]');
+        bigPlayerZone.classList.add('aspect-video');
+        let embed = fileUrl;
+        if(embed.includes('watch?v=')) embed = embed.replace('watch?v=', 'embed/');
+        if(embed.includes('youtu.be/')) embed = embed.replace('youtu.be/', 'youtube.com/embed/');
+        embed += embed.includes('?') ? "&autoplay=1" : "?autoplay=1";
+        bigPlayerZone.innerHTML = `<iframe src="${embed}" class="w-full h-full" frameborder="0" allow="autoplay" allowfullscreen></iframe>`;
+    } else {
+        bigPlayerZone.innerHTML = `
+            <div class="w-full h-full min-h-[300px] flex flex-col items-center justify-center bg-gray-900 p-4">
+                <p class="text-[11px] text-gray-400 mb-2">${title}</p>
+                <a href="${fileUrl}" target="_blank" class="bg-blue-600 text-white text-[10px] py-1.5 px-3 rounded font-bold">Buka Sumber</a>
+            </div>`;
+    }
+
+    setTimeout(() => {
+        bigPlayerZone.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+        });
+    }, 150);
+       }
 
         function closeVideo(id) {
             const btn = document.getElementById('play-btn-' + id);
