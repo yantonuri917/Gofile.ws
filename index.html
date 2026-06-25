@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* PROTEKSI UI: Mencegah pengguna memblok/menyorot teks atau gambar di dalam web */
+        /* PROTEKSI UI */
         body {
             -webkit-user-select: none;
             -moz-user-select: none;
@@ -20,8 +20,17 @@
         }
     </style>
 </head>
-<body class="bg-[#0b0f19] text-gray-200 min-h-screen flex flex-col items-center p-3 sm:p-6" oncontextmenu="return false;">
+<!-- Padding top ditingkatkan agar konten utama tidak tertutup iklan sticky atas -->
+<body class="bg-[#0b0f19] text-gray-200 min-h-screen flex flex-col items-center p-3 sm:p-6 pt-[120px]" oncontextmenu="return false;">
 
+    <!-- WADAH IKLAN STICKY ATAS (728x90) -->
+    <div class="fixed top-0 left-0 right-0 w-full flex justify-center bg-[#0b0f19]/90 py-1.5 border-b border-gray-800/40 z-50 shadow-xl min-h-[95px] overflow-hidden">
+        <div id="wadah-iklan-sticky-atas" class="w-full max-w-[728px] h-[90px] flex items-center justify-center bg-transparent overflow-hidden">
+            <!-- Iklan disuntik via Javascript di bawah agar load lebih lancar -->
+        </div>
+    </div>
+
+    <!-- KONTEN UTAMA LIST FOLDER -->
     <div class="max-w-3xl w-full bg-[#111827] rounded-xl p-4 sm:p-5 shadow-2xl border border-gray-800/80 mt-2 overflow-hidden">
         
         <div class="border-b border-gray-800 pb-4 mb-4">
@@ -54,47 +63,21 @@
     </div>
 
     <script>
-        const SUPABASE_URL = "https://ehhrvswzhirrnrqxmxae.supabase.co"; 
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoaHJ2c3d6aGlycm5ycXhteGFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMjg2NDcsImV4cCI6MjA5NTgwNDY0N30.75vZs3Rn6j7YSlInHpGDN39OGjhywcEBv8j-hawyOlY";
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        05f',
+                'format' : 'iframe',
+                'height' : 90,
+                'width' : 728,
+                'params' : {}
+            };
 
-        // --- DETEKSI MULTI-FORMAT SLUG (Aman untuk /slug dan /d/slug) ---
-        let videoSlug = "";
-        const urlParams = new URLSearchParams(window.location.search);
-
-        if (urlParams.has('p')) {
-            videoSlug = urlParams.get('p');
-        } else {
-            const pathSegments = window.location.pathname.split('/').filter(Boolean);
-            if (pathSegments[0] === 'd') {
-                videoSlug = pathSegments[1];
-            } else {
-                videoSlug = pathSegments.pop();
-            }
+            const scriptIklan = document.createElement('script');
+            scriptIklan.type = "text/javascript";
+            scriptIklan.src = "https://braverybreezebinding.com/64e783bd557c30cbf66293b5c5fda05f/invoke.js";
+            
+            targetWadah.appendChild(scriptIklan);
         }
 
-        const folderTitleDisplay = document.getElementById('folder-title-display');
-        const folderDate = document.getElementById('folder-date');
-        const filesFeedContainer = document.getElementById('files-feed-container');
-        const fileCountSpan = document.getElementById('file-count');
-        const totalItemsFooter = document.getElementById('total-items-footer');
-
-        let videoUrlsCache = {};
-        const DOWNLOAD_REDIRECT_URL = "https://braverybreezebinding.com/dyu6kzr44?key=703bc4908bfdd21b148e4fe03f9810cb";
-
-        // PROTEKSI KEYBOARD: Blokir F12, Ctrl+Shift+I/J/C, dan Ctrl+U
-        document.addEventListener('keydown', function(e) {
-            if (
-                e.key === 'F12' || 
-                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || 
-                (e.ctrlKey && e.key === 'u')
-            ) {
-                e.preventDefault();
-                return false;
-            }
-        });
-
-        // FUNGSI SUNTIK IKLAN SELA KONTANER DI LIST VIDEO
+        
         function suntikIklanKontainer(parent, containerId, scriptSrc) {
             var wadah = document.createElement('div');
             wadah.className = "py-4 flex justify-center border-b border-gray-800/40";
@@ -212,12 +195,13 @@
 
                         </div>
 
-                        <div id="expanded-zone-${item.id}" class="w-full hidden mt-3 bg-black border border-gray-800 aspect-video shadow-2xl rounded-lg overflow-hidden"></div>
+                        <!-- KONTANER PEMUTAR: h-auto agar otomatis memanjang ke atas saat video portrait diputar -->
+                        <div id="expanded-zone-${item.id}" class="w-full hidden mt-3 bg-black border border-gray-800 shadow-2xl rounded-lg overflow-hidden flex justify-center items-center h-auto"></div>
                     `;
 
                     filesFeedContainer.appendChild(card);
 
-                    // --- SUNTIK DUA IKLAN SELA DI BAWAH VIDEO KE-1 DAN KE-2 ---
+                    
                     if (index === 0) {
                         suntikIklanKontainer(filesFeedContainer, "container-93737c813e604544d6d8768c743712d8", "https://braverybreezebinding.com/93737c813e604544d6d8768c743712d8/invoke.js");
                     }
@@ -268,50 +252,49 @@
             }
         }
 
-      function playVideo(id, title) {
-    const btn = document.getElementById('play-btn-' + id);
-    const miniBox = document.getElementById('mini-viewport-' + id);
-    const bigPlayerZone = document.getElementById('expanded-zone-' + id);
-    const fileUrl = videoUrlsCache[id];
+        function playVideo(id, title) {
+            const btn = document.getElementById('play-btn-' + id);
+            const miniBox = document.getElementById('mini-viewport-' + id);
+            const bigPlayerZone = document.getElementById('expanded-zone-' + id);
+            const fileUrl = videoUrlsCache[id];
 
-    btn.setAttribute('data-status', 'playing');
-    btn.innerHTML = `<i class="fa-solid fa-xmark text-sm"></i>`; 
-    btn.className = "w-8 h-8 rounded bg-red-600 hover:bg-red-700 text-white border border-red-500 flex items-center justify-center text-xs shadow-md";
+            btn.setAttribute('data-status', 'playing');
+            btn.innerHTML = `<i class="fa-solid fa-xmark text-sm"></i>`; 
+            btn.className = "w-8 h-8 rounded bg-red-600 hover:bg-red-700 text-white border border-red-500 flex items-center justify-center text-xs shadow-md";
 
-    miniBox.style.setProperty('display', 'none', 'important'); 
-    bigPlayerZone.classList.remove('hidden'); 
+            miniBox.style.setProperty('display', 'none', 'important'); 
+            bigPlayerZone.classList.remove('hidden'); 
 
-    // MODIFIKASI: Menghapus aspect-video bawaan lanskap. Tinggi diset h-auto agar memanjang ke atas secara alami.
-    bigPlayerZone.className = "w-full hidden mt-3 bg-black border border-gray-800 shadow-2xl rounded-lg overflow-hidden flex justify-center items-center h-auto";
-    bigPlayerZone.classList.remove('hidden');
+            
+            bigPlayerZone.className = "w-full hidden mt-3 bg-black border border-gray-800 shadow-2xl rounded-lg overflow-hidden flex justify-center items-center h-auto";
+            bigPlayerZone.classList.remove('hidden');
 
-    if (fileUrl.match(/\.(mp4|webm|ogg)/i) || fileUrl.includes('supabase.co/storage')) {
-        const playUrl = fileUrl.split('#')[0];
-        // Menggunakan h-auto dan object-contain agar video portrait memanjang ke atas secara utuh tanpa ada bagian yang terpotong (No Crop)
-        bigPlayerZone.innerHTML = `<video controls autoplay playsinline controlsList="nodownload" oncontextmenu="return false;" class="w-full h-auto max-h-[80vh] bg-black select-none object-contain"><source src="${playUrl}" type="video/mp4"></video>`;
-    } else if (fileUrl.includes('youtube.com') || fileUrl.includes('youtu.be')) {
-        // Khusus link YouTube normal tetap menggunakan format landscape standar 16:9
-        bigPlayerZone.classList.add('aspect-video');
-        let embed = fileUrl;
-        if(embed.includes('watch?v=')) embed = embed.replace('watch?v=', 'embed/');
-        if(embed.includes('youtu.be/')) embed = embed.replace('youtu.be/', 'youtube.com/embed/');
-        embed += embed.includes('?') ? "&autoplay=1" : "?autoplay=1";
-        bigPlayerZone.innerHTML = `<iframe src="${embed}" class="w-full h-full" frameborder="0" allow="autoplay" allowfullscreen></iframe>`;
-    } else {
-        bigPlayerZone.innerHTML = `
-            <div class="w-full h-full min-h-[200px] flex flex-col items-center justify-center bg-gray-900 p-4">
-                <p class="text-[11px] text-gray-400 mb-2">${title}</p>
-                <a href="${fileUrl}" target="_blank" class="bg-blue-600 text-white text-[10px] py-1.5 px-3 rounded font-bold">Buka Sumber</a>
-            </div>`;
-    }
+            if (fileUrl.match(/\.(mp4|webm|ogg)/i) || fileUrl.includes('supabase.co/storage')) {
+                const playUrl = fileUrl.split('#')[0];
+                
+                bigPlayerZone.innerHTML = `<video controls autoplay playsinline controlsList="nodownload" oncontextmenu="return false;" class="w-full h-auto max-h-[80vh] bg-black select-none object-contain"><source src="${playUrl}" type="video/mp4"></video>`;
+            } else if (fileUrl.includes('youtube.com') || fileUrl.includes('youtu.be')) {
+                bigPlayerZone.classList.add('aspect-video');
+                let embed = fileUrl;
+                if(embed.includes('watch?v=')) embed = embed.replace('watch?v=', 'embed/');
+                if(embed.includes('youtu.be/')) embed = embed.replace('youtu.be/', 'youtube.com/embed/');
+                embed += embed.includes('?') ? "&autoplay=1" : "?autoplay=1";
+                bigPlayerZone.innerHTML = `<iframe src="${embed}" class="w-full h-full" frameborder="0" allow="autoplay" allowfullscreen></iframe>`;
+            } else {
+                bigPlayerZone.innerHTML = `
+                    <div class="w-full h-full min-h-[200px] flex flex-col items-center justify-center bg-gray-900 p-4">
+                        <p class="text-[11px] text-gray-400 mb-2">${title}</p>
+                        <a href="${fileUrl}" target="_blank" class="bg-blue-600 text-white text-[10px] py-1.5 px-3 rounded font-bold">Buka Sumber</a>
+                    </div>`;
+            }
 
-    setTimeout(() => {
-        bigPlayerZone.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
-        });
-    }, 150);
-      }
+            setTimeout(() => {
+                bigPlayerZone.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }, 150);
+        }
 
         function closeVideo(id) {
             const btn = document.getElementById('play-btn-' + id);
@@ -328,7 +311,7 @@
             miniBox.style.setProperty('display', 'block', 'important'); 
         }
 
-        // Jalankan pemuatan feed utama list video beserta iklan di dalam loop
+            pasangIklanStickyAtas();
         loadGofileFeed();
     </script>
 
