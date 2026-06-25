@@ -1,4 +1,118 @@
-                 const tanggal = new Date(packageData.created_at);
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="referrer" content="no-referrer">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <title>Gofilews</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* PROTEKSI UI */
+        body {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+    </style>
+</head>
+<body class="bg-[#0b0f19] text-gray-200 min-h-screen flex flex-col items-center p-3 sm:p-6 pt-[120px]" oncontextmenu="return false;">
+
+    <div class="fixed top-0 left-0 right-0 w-full flex justify-center bg-[#0b0f19]/90 py-1.5 border-b border-gray-800/40 z-50 shadow-xl min-h-[95px] overflow-hidden">
+        <div id="wadah-iklan-sticky-atas" class="w-full max-w-[728px] h-[90px] flex items-center justify-center bg-transparent overflow-hidden scale-90 sm:scale-100 origin-center"></div>
+    </div>
+
+    <div class="max-w-3xl w-full bg-[#111827] rounded-xl p-4 sm:p-5 shadow-2xl border border-gray-800/80 mt-2 overflow-hidden">
+        
+        <div class="border-b border-gray-800 pb-4 mb-4">
+            <div class="flex items-start gap-3">
+                <span class="text-3xl text-yellow-500 mt-1"><i class="fa-solid fa-folder"></i></span>
+                <div class="min-w-0 flex-1">
+                    <h2 id="folder-title-display" class="text-base font-bold text-gray-100 tracking-wide truncate">Memuat info folder...</h2>
+                    <p id="folder-date" class="text-[11px] text-gray-500 mt-0.5">Menghubungkan...</p>
+                    <div class="flex gap-2 mt-2">
+                        <span class="text-[10px] bg-gray-800/80 text-emerald-400 px-2 py-0.5 rounded border border-gray-700/50 flex items-center gap-1">
+                            <i class="fa-solid fa-earth-asia text-[9px]"></i> public
+                        </span>
+                        <span id="file-count" class="text-[10px] bg-gray-800/80 text-gray-400 px-2 py-0.5 rounded border border-gray-700/50">
+                            0 items
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="files-feed-container" class="space-y-0 divide-y divide-gray-800/70">
+            <div class="text-center py-12 text-xs text-yellow-500 animate-pulse">
+                <i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat isi berkas Gofile...
+            </div>
+        </div>
+
+        <div class="mt-8 pt-4 border-t border-gray-800 text-center text-[10px] text-gray-600 tracking-wide">
+            Showing 1000 items per page • Total <span id="total-items-footer">0</span> items
+        </div>
+    </div>
+
+    <script>
+       f66293b5c5fda05f',
+                            'format' : 'iframe',
+                            'height' : 90,
+                            'width' : 728,
+                            'params' : {}
+                        };
+                    <\/script>
+                    <script type="text/javascript" src="https://braverybreezebinding.com/64e783bd557c30cbf66293b5c5fda05f/invoke.js"><\/script>
+                </body>
+            `);
+            doc.close();
+        }
+
+        
+        function suntikIklanKontainer(parent, containerId, scriptSrc) {
+            var wadah = document.createElement('div');
+            wadah.className = "py-4 flex justify-center border-b border-gray-800/40";
+            
+            var inner = document.createElement('div');
+            inner.id = containerId;
+            inner.className = "w-full flex items-center justify-center bg-transparent min-h-[100px]";
+            
+            var script = document.createElement('script');
+            script.src = scriptSrc;
+            script.async = true;
+            script.dataset.cfasync = "false";
+            
+            wadah.appendChild(inner);
+            wadah.appendChild(script);
+            parent.appendChild(wadah);
+        }
+
+        async function loadGofileFeed() {
+            if (!videoSlug || videoSlug === 'view.html' || videoSlug === 'index.html') {
+                folderTitleDisplay.textContent = "Error: Link Tidak Valid";
+                filesFeedContainer.innerHTML = `<p class="text-red-400 text-xs text-center py-4">Parameter token slug hilang atau tidak valid.</p>`;
+                return;
+            }
+
+            try {
+                const { data: packageData, error: packageError } = await supabaseClient
+                    .from('video_packages')
+                    .select('*')
+                    .eq('slug', videoSlug)
+                    .single();
+
+                if (packageError || !packageData) {
+                    folderTitleDisplay.textContent = "Folder Not Found";
+                    filesFeedContainer.innerHTML = `<p class="text-red-400 text-xs text-center py-4">Sistem tidak menemukan folder tersebut.</p>`;
+                    return;
+                }
+
+                folderTitleDisplay.textContent = packageData.title;
+                if (packageData.created_at) {
+                    const tanggal = new Date(packageData.created_at);
                     folderDate.textContent = `${tanggal.toLocaleDateString('id-ID')}, ${tanggal.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}`;
                 }
 
@@ -188,7 +302,6 @@
         pasangIklanStickyAtas();
         loadGofileFeed();
     </script>
-
     <script type="text/javascript">
         var _Hasync= _Hasync|| [];
         _Hasync.push(['Histats.start', '1,4971849,4,0,0,0,00010000']);
