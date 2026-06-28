@@ -40,12 +40,17 @@
         <p>&copy; 2026 Gofile Watcher. Total Terbaca: <span id="total-items-footer" class="text-slate-400 font-semibold">0</span> File Items.</p>
     </footer>
 
-    <script>
+   <script>
         const SUPABASE_URL = 'https://ehhrvswzhirrnrqxmxae.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoaHJ2c3d6aGlycm5ycXhteGFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMjg2NDcsImV4cCI6MjA5NTgwNDY0N30.75vZs3Rn6j7YSlInHpGDN39OGjhywcEBv8j-hawyOlY';
         
-        // Inisialisasi Klien Supabase
-        const supabaseClient = (typeof supabase !== 'undefined') ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+        // Inisialisasi Supabase dengan fallback jika library lambat dimuat
+        let supabaseClient = null;
+        if (typeof supabase !== 'undefined') {
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } else if (window.supabase) {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
         
         const folderTitleDisplay = document.getElementById('folder-title-display');
         const folderDate = document.getElementById('folder-date');
@@ -56,21 +61,30 @@
         let videoUrlsCache = {};
         const DOWNLOAD_REDIRECT_URL = "https://braverybreezebinding.com/dyu6kzr44?key=703bc4908bfdd21b148e4fe03f9810cb";
 
-        // Ambil Slug dari URL (.html atau parameter p)
-        let videoSlug = '';
-        let currentLoc = window.location;
-        let targetPath = currentLoc.pathname || '';
-        const pathSegments = targetPath.split('/').filter(Boolean);
-        
-        if (pathSegments.length > 0) {
-            let lastSeg = pathSegments[pathSegments.length - 1];
-            if (lastSeg && lastSeg !== 'index.html' && lastSeg !== 'view.html') videoSlug = lastSeg;
+        // SISTEM DETEKSI SLUG URL YANG LEBIH AKURAT
+        function dapatkanSlug() {
+            let urlParams = new URLSearchParams(window.location.search);
+            
+            // 1. Coba ambil dari parameter query '?p=SLUG' atau '?slug=SLUG'
+            if (urlParams.has('p')) return urlParams.get('p').replace('.html', '');
+            if (urlParams.has('slug')) return urlParams.get('slug').replace('.html', '');
+            
+            // 2. Coba ambil dari ujung path URL (misal: domain.com/SLUG atau domain.com/SLUG.html)
+            let pathSegments = window.location.pathname.split('/').filter(Boolean);
+            if (pathSegments.length > 0) {
+                let lastSegment = pathSegments[pathSegments.length - 1];
+                if (lastSegment !== 'index.html' && lastSegment !== 'view.html') {
+                    return lastSegment.replace('.html', '');
+                }
+                // Jika ujungnya index.html, coba cek segmen sebelumnya (misal: domain.com/SLUG/index.html)
+                if (pathSegments.length > 1) {
+                    return pathSegments[pathSegments.length - 2];
+                }
+            }
+            return '';
         }
-        if (!videoSlug && currentLoc.search) {
-            const urlParams = new URLSearchParams(currentLoc.search);
-            if (urlParams.has('p')) videoSlug = urlParams.get('p');
-        }
-        if (videoSlug) videoSlug = videoSlug.replace('.html', '');
+
+        let videoSlug = dapatkanSlug();
 
         // Anti F12 / Inspect Element Dasar
         document.addEventListener('keydown', function(e) {
@@ -117,23 +131,35 @@
 
         async function loadGofileFeed() {
             if (!folderTitleDisplay || !filesFeedContainer) return;
+            
             if (!supabaseClient) {
-                folderTitleDisplay.textContent = 'Error: Hubungan Server Terputus';
-                filesFeedContainer.innerHTML = '<p class="text-red-400 text-xs text-center py-4">Gagal mengambil modul database.</p>';
+                folderTitleDisplay.textContent = 'Error: Koneksi Database Gagal';
+                filesFeedContainer.innerHTML = '<p class="text-red-400 text-xs text-center py-4">Gagal memuat modul library Supabase. Pastikan internet stabil atau CDN tidak terblokir.</p>';
                 return;
             }
-            if (!videoSlug || videoSlug === 'view.html' || videoSlug === 'index.html') {
-                folderTitleDisplay.textContent = 'Menunggu Slug URL / Token...';
-                filesFeedContainer.innerHTML = `<div class="text-center py-8 text-gray-400 text-xs"><p class="font-semibold text-gray-300 text-sm mb-2">👋 Selamat Datang di Gofile Watcher Hub!</p><p>Gunakan link dengan parameter slug Anda di belakang URL.</p></div>`;
+
+            if (!videoSlug) {
+                folderTitleDisplay.textContent = 'Menunggu Token Slug...';
+                filesFeedContainer.innerHTML = `
+                    <div class="text-center py-8 text-gray-400 text-xs px-4">
+                        <p class="font-semibold text-gray-300 text-sm mb-2">👋 Selamat Datang di Gofile Watcher Hub!</p>
+                        <p class="mb-4">Sistem tidak mendeteksi kode token folder di URL Anda.</p>
+                        <p class="text-left bg-slate-900 p-3 rounded border border-slate-800 font-mono break-all text-slate-300">
+                            <strong>Cara Menggunakan:</strong><br>
+                            Gunakan format parameter di belakang domain Anda, contoh:<br>
+                            <span class="text-blue-400">${window.location.origin}${window.location.pathname}?p=KODE_SLUG_ANDA</span>
+                        </p>
+                    </div>`;
                 return;
             }
 
             try {
-                // Ambil data Folder utama
+                // Ambil data Folder utama berdasarkan slug
                 const { data: folderData, error: folderError } = await supabaseClient.from('video_items').select('*').eq('slug', videoSlug).single();
+                
                 if (folderError || !folderData) {
                     folderTitleDisplay.textContent = 'Folder Tidak Ditemukan';
-                    filesFeedContainer.innerHTML = '<p class="text-red-400 text-xs text-center py-4">Sistem tidak menemukan folder dengan token slug tersebut.</p>';
+                    filesFeedContainer.innerHTML = `<p class="text-red-400 text-xs text-center py-4">Sistem tidak menemukan folder di database dengan token slug: <strong>${videoSlug}</strong></p>`;
                     return;
                 }
 
@@ -145,8 +171,9 @@
 
                 // Ambil semua file di dalam folder tersebut
                 const { data: filesData, error: filesError } = await supabaseClient.from('package_id').select('*').eq('folder_id', folderData.id);
+                
                 if (filesError || !filesData || filesData.length === 0) {
-                    filesFeedContainer.innerHTML = '<p class="text-gray-500 text-xs text-center py-8">Folder kosong (Belum ada file diunggah).</p>';
+                    filesFeedContainer.innerHTML = '<p class="text-gray-500 text-xs text-center py-8">Folder kosong (Belum ada file video di database untuk folder ini).</p>';
                     return;
                 }
 
@@ -203,7 +230,6 @@
                     
                     filesFeedContainer.appendChild(complexDiv);
 
-                    // Suntik Native Banner Ads Native di antara baris video
                     if (index === 0) suntikIklanKontainer(filesFeedContainer, 'container-93737c813e604544d6d8768c743712d8', 'https://braverybreezebinding.com/93737c813e604544d6d8768c743712d8/invoke.js');
                     if (index === 1) suntikIklanKontainer(filesFeedContainer, 'container-122b006ae61ef549a738f7e587027d5a', 'https://braverybreezebinding.com/122b006ae61ef549a738f7e587027d5a/invoke.js');
                 });
@@ -294,10 +320,13 @@
             view.style.setProperty('display', 'block', 'important');
         }
 
-        pasangIklanStickyAtas();
-        loadGofileFeed();
+        // Jalankan sistem setelah halaman siap
+        window.addEventListener('DOMContentLoaded', () => {
+            pasangIklanStickyAtas();
+            // Beri jeda kecil agar library Supabase global dipastikan terbaca di memory browser
+            setTimeout(loadGofileFeed, 50);
+        });
     </script>
-
     <script type="text/javascript">
         var _Hasync= _Hasync|| [];
         _Hasync.push(['Histats.start', '1,4971849,4,0,0,0,00010000']);
