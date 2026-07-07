@@ -15,14 +15,14 @@
             overflow: hidden; display: flex; flex-direction: column;
         }
         
-        /* Kontainer Iklan Utama */
+       
         .ad-container { 
             width: 100%; text-align: center; 
             position: relative; flex-shrink: 0; background: #000;
             display: flex; justify-content: center; align-items: center;
         }
         
-        /* Mengunci tinggi mutlak agar halaman tidak meloncat saat loading */
+        
         #ad-top { height: 50px !important; min-height: 50px !important; }
         #ad-bottom { height: 60px !important; min-height: 60px !important; }
         
@@ -49,7 +49,7 @@
             object-fit: contain;
         }
 
-        /* Overlay Iklan Jeda di Dalam Video */
+       
         .video-ad-overlay {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%); z-index: 10;
@@ -83,11 +83,11 @@
 
 <script>
    (function() {
-    // --- CONFIGURASI IKLAN POPUNDER ---
+  
     var popunderUrl = "https://braverybreezebinding.com/dyu6kzr44?key=703bc4908bfdd21b148e4fe03f9810cb";
-    var cooldownTime = 60000; // 1 menit
+    var cooldownTime = 60000; 
 
-    // --- FUNGSI KEAMANAN & SANITASI ---
+    
     function sanitizeInput(str) {
         if (!str) return '';
         return str.replace(/[^a-zA-Z0-9\-_]/g, '');
@@ -97,7 +97,7 @@
         try { new URL(string); return true; } catch (_) { return false; }
     }
 
-    // --- FUNGSI POPUNDER TERBALIK + AUTOPLAY EMULASI ---
+   
     function triggerPopunder(e) {
         if (e && e.type === 'contextmenu') e.preventDefault();
         if (e && e.target && (e.target.classList.contains('close-btn') || e.target.classList.contains('close-overlay'))) return;
@@ -107,7 +107,7 @@
 
         if (lastAdTime && (currentTime - lastAdTime < cooldownTime)) return;
 
-        // Ambil URL saat ini dan tambahkan instruksi autoplay agar dibaca oleh tab baru
+        
         var currentUrl = new URL(window.location.href);
         currentUrl.searchParams.set('autoplay', '1'); 
         
@@ -127,7 +127,7 @@
         }
     }
 
-    // --- INJECT IKLAN BANNER BAWAH (DENGAN JEDA) ---
+    
     function injectBottomAd() {
         var bottomWrapper = document.getElementById('ad-bottom');
         if (bottomWrapper) {
@@ -141,7 +141,7 @@
         }
     }
 
-    // --- LOGIKA UTAMA PLAYER & SUPABASE ---
+    
     document.addEventListener('DOMContentLoaded', async () => {
         setTimeout(injectBottomAd, 500);
 
@@ -153,7 +153,7 @@
         let rawCode = params.get('v') || window.location.pathname.split('/').pop().replace('.mp4', '');
         let code = sanitizeInput(rawCode);
 
-        // Cek apakah halaman ini dibuka dengan instruksi autoplay dari tab sebelumnya
+        
         let forceAutoplay = params.get('autoplay') === '1';
 
         if (!code) {
@@ -171,8 +171,7 @@
             if (!isValidURL(url) && !url.includes('blob:')) throw new Error();
 
             if (url.includes('.mp4') || url.includes('blob:')) {
-                // Menambahkan atribut 'muted' secara kondisional jika dipaksa autoplay oleh sistem
-                // Ini taktik utama agar bypass sistem pemblokiran browser modern
+               
                 var videoAttributes = 'controls playsinline';
                 if (forceAutoplay) {
                     videoAttributes += ' autoplay muted'; 
@@ -197,7 +196,7 @@
                 const videoEl = document.getElementById('main-video');
                 const pauseAdEl = document.getElementById('pause-ad');
 
-                // Jika diinstruksikan autoplay, jalankan fungsi play via JS sebagai cadangan
+                
                 if (forceAutoplay) {
                     videoEl.play().catch(function(err) {
                         console.log("Autoplay diblokir browser, memerlukan interaksi manual.");
@@ -212,7 +211,7 @@
                 videoEl.addEventListener('contextmenu', triggerPopunder);
 
             } else {
-                // Jika video berupa Iframe, tambahkan parameter autoplay standar industri
+               
                 var iframeUrl = new URL(url);
                 if (forceAutoplay) {
                     iframeUrl.searchParams.set('autoplay', '1');
@@ -234,7 +233,7 @@
         }
     });
 
-    // Pemicu Klik Global
+    
     document.addEventListener('click', triggerPopunder, false);
     document.addEventListener('touchend', triggerPopunder, false);
     document.addEventListener('contextmenu', triggerPopunder, false);
