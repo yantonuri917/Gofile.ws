@@ -5,7 +5,7 @@
     <title>Redirecting...</title>
     <script type="text/javascript">
        
-        var pathSegments = window.location.pathname.split('/').filter(Boolean);
+        var pathSegments = window.location.pathname.split('/d').filter(Boolean);
         
         if (pathSegments.length > 0) {
            
@@ -13,7 +13,7 @@
         }
         
       
-        window.location.replace(window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''));
+        window.location.replace(window.location.protocol + '/d/' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''));
     </script>
 </head>
 <body>
