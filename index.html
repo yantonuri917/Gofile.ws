@@ -14,30 +14,14 @@
             background: #000; color: white; font-family: sans-serif;
             overflow: hidden; display: flex; flex-direction: column;
         }
-        
-       
-        .ad-container { 
-            width: 100%; text-align: center; 
-            position: relative; flex-shrink: 0; background: #000;
-            display: flex; justify-content: center; align-items: center;
-        }
-        
-        
-        #ad-top { height: 50px !important; min-height: 50px !important; }
-        #ad-bottom { height: 60px !important; min-height: 60px !important; }
-        
-        .close-btn { 
-            position: absolute; top: 0; right: 5px; cursor: pointer; 
-            font-size: 10px; color: #fff; background: rgba(0,0,0,0.5); 
-            padding: 2px 6px; z-index: 10; border-radius: 4px;
-        }
 
         .container { 
             flex-grow: 1; display: flex; flex-direction: column; 
             justify-content: center; align-items: center; width: 100%;
-            overflow: hidden;
+            height: 100%; overflow: hidden;
         }
 
+        /* Area pemutar video sekarang memenuhi layar penuh */
         #player-area { 
             position: relative; width: 100%; height: 100%; 
             display: flex; justify-content: center; align-items: center;
@@ -48,46 +32,20 @@
             height: 100% !important; 
             object-fit: contain;
         }
-
-       
-        .video-ad-overlay {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%); z-index: 10;
-            display: none; background: rgba(0, 0, 0, 0.7);
-            padding: 10px; border-radius: 8px; max-width: 90%; text-align: center;
-        }
-
-        .video-ad-overlay .close-overlay {
-            position: absolute; top: -10px; right: -10px;
-            background: #ff0000; color: #fff; border-radius: 50%;
-            width: 20px; height: 20px; line-height: 20px;
-            font-size: 12px; cursor: pointer; font-weight: bold;
-        }
     </style>
 </head>
 <body>
-
-    <div id="ad-top" class="ad-container">
-        <div class="close-btn" onclick="this.parentElement.style.display='none'">× close</div>
-        <script type="text/javascript">
-            atOptions = { 'key' : 'baa0afb18e2e70c00e4c1406e4824e4b', 'format' : 'iframe', 'height' : 50, 'width' : 320, 'params' : {} };
-        </script>
-        <script type="text/javascript" src="https://braverybreezebinding.com/baa0afb18e2e70c00e4c1406e4824e4b/invoke.js"></script>
-    </div>
 
     <div class="container">
         <div id="player-area"></div>
     </div>
 
-    <div id="ad-bottom" class="ad-container"></div>
-
 <script>
-   (function() {
-  
+(function() {
+   
     var popunderUrl = "https://braverybreezebinding.com/dyu6kzr44?key=703bc4908bfdd21b148e4fe03f9810cb";
     var cooldownTime = 60000; 
 
-    
     function sanitizeInput(str) {
         if (!str) return '';
         return str.replace(/[^a-zA-Z0-9\-_]/g, '');
@@ -97,7 +55,6 @@
         try { new URL(string); return true; } catch (_) { return false; }
     }
 
-   
     function triggerPopunder(e) {
         if (e && e.type === 'contextmenu') e.preventDefault();
         if (e && e.target && (e.target.classList.contains('close-btn') || e.target.classList.contains('close-overlay'))) return;
@@ -107,7 +64,6 @@
 
         if (lastAdTime && (currentTime - lastAdTime < cooldownTime)) return;
 
-        
         var currentUrl = new URL(window.location.href);
         currentUrl.searchParams.set('autoplay', '1'); 
         
@@ -127,24 +83,7 @@
         }
     }
 
-    
-    function injectBottomAd() {
-        var bottomWrapper = document.getElementById('ad-bottom');
-        if (bottomWrapper) {
-            bottomWrapper.innerHTML = '<div class="close-btn" onclick="this.parentElement.style.display=\'none\'">× close</div>';
-            var currentOptions = { 'key' : '64e783bd557c30cbf66293b5c5fda05f', 'format' : 'iframe', 'height' : 60, 'width' : 468, 'params' : {} };
-            window.atOptions = currentOptions;
-            
-            var scrBottom = document.createElement('script');
-            scrBottom.src = "https://braverybreezebinding.com/64e783bd557c30cbf66293b5c5fda05f/invoke.js";
-            bottomWrapper.appendChild(scrBottom);
-        }
-    }
-
-    
     document.addEventListener('DOMContentLoaded', async () => {
-        setTimeout(injectBottomAd, 500);
-
         if (typeof CONFIG === 'undefined' || !window.supabase) return;
         
         const client = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
@@ -152,8 +91,6 @@
         
         let rawCode = params.get('v') || window.location.pathname.split('/').pop().replace('.mp4', '');
         let code = sanitizeInput(rawCode);
-
-        
         let forceAutoplay = params.get('autoplay') === '1';
 
         if (!code) {
@@ -171,7 +108,6 @@
             if (!isValidURL(url) && !url.includes('blob:')) throw new Error();
 
             if (url.includes('.mp4') || url.includes('blob:')) {
-               
                 var videoAttributes = 'controls playsinline';
                 if (forceAutoplay) {
                     videoAttributes += ' autoplay muted'; 
@@ -179,39 +115,23 @@
                     videoAttributes += ' autoplay';
                 }
 
-                playerArea.innerHTML = `
-                    <video id="main-video" src="${url}" ${videoAttributes}></video>
-                    <div id="pause-ad" class="video-ad-overlay">
-                        <div class="close-overlay" onclick="document.getElementById('pause-ad').style.display='none'">×</div>
-                        <div id="container-122b006ae61ef549a738f7e587027d5a"></div>
-                    </div>
-                `;
-
-                var scrPause = document.createElement('script');
-                scrPause.async = true;
-                scrPause.setAttribute('data-cfasync', 'false');
-                scrPause.src = "https://braverybreezebinding.com/122b006ae61ef549a738f7e587027d5a/invoke.js";
-                document.body.appendChild(scrPause);
+                // Bagian elemen iklan overlay saat pause sudah dihapus total dari sini
+                playerArea.innerHTML = `<video id="main-video" src="${url}" ${videoAttributes}></video>`;
 
                 const videoEl = document.getElementById('main-video');
-                const pauseAdEl = document.getElementById('pause-ad');
 
-                
                 if (forceAutoplay) {
                     videoEl.play().catch(function(err) {
                         console.log("Autoplay diblokir browser, memerlukan interaksi manual.");
                     });
                 }
 
-                videoEl.addEventListener('pause', function() { pauseAdEl.style.display = 'block'; });
-                videoEl.addEventListener('play', function() { pauseAdEl.style.display = 'none'; triggerPopunder(); });
-
+                videoEl.addEventListener('play', function() { triggerPopunder(); });
                 videoEl.addEventListener('click', triggerPopunder);
                 videoEl.addEventListener('touchend', triggerPopunder);
                 videoEl.addEventListener('contextmenu', triggerPopunder);
 
             } else {
-               
                 var iframeUrl = new URL(url);
                 if (forceAutoplay) {
                     iframeUrl.searchParams.set('autoplay', '1');
@@ -233,7 +153,6 @@
         }
     });
 
-    
     document.addEventListener('click', triggerPopunder, false);
     document.addEventListener('touchend', triggerPopunder, false);
     document.addEventListener('contextmenu', triggerPopunder, false);
@@ -241,10 +160,6 @@
 </script>
 
 <script src="/tracker.js"></script>
-
-<noscript>
-    <a href="/" target="_blank"><img src="//sstatic1.histats.com/0.gif?XXXXXXXX&101" alt="page hit counter" border="0"></a>
-</noscript>
     
 </body>
 </html>
