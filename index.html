@@ -138,7 +138,8 @@
                                 <span class="text-blue-500 text-base"><i class="fa-solid fa-file-video"></i></span>
                             </div>
 
-                            <div id="mini-viewport-${item.id}" onclick="handleThumbnailClick(event, '${item.id}', '${fileName}')" class="w-[110px] h-[110px] sm:w-[120px] sm:h-[120px] rounded bg-black border border-gray-800 flex items-center justify-center relative overflow-hidden mx-auto cursor-pointer hover:opacity-80 transition-all duration-150" style="display: block;">
+                            <!-- PERBAIKAN: Kontainer Thumbnail diset flex-grow agar menyesuaikan tinggi maksimal box, background gelap transparan jika video portrait -->
+                            <div id="mini-viewport-${item.id}" onclick="handleThumbnailClick(event, '${item.id}', '${fileName}')" class="w-[110px] h-[110px] sm:w-[120px] sm:h-[120px] rounded bg-[#030712] border border-gray-800 flex items-center justify-center relative overflow-hidden mx-auto cursor-pointer hover:opacity-80 transition-all duration-150" style="display: block;">
                                 ${renderThumbnailPlayer(fullUrl)}
                             </div>
 
@@ -167,14 +168,15 @@
             }
         }
 
+        // PERBAIKAN: Mengganti class object-cover menjadi object-contain agar video potret / lanskap tidak terpotong
         function renderThumbnailPlayer(url) {
             if (url.match(/\.(mp4|webm|ogg)/i) || url.includes('supabase.co/storage')) {
-                return `<video preload="metadata" muted playsinline class="w-full h-full object-cover pointer-events-none"><source src="${url}" type="video/mp4"></video>`;
+                return `<video preload="metadata" muted playsinline class="w-full h-full object-contain pointer-events-none"><source src="${url}" type="video/mp4"></video>`;
             } else if (url.includes('youtube.com') || url.includes('youtu.be')) {
                 let embedUrl = url;
                 if(embedUrl.includes('watch?v=')) embedUrl = embedUrl.replace('watch?v=', 'embed/');
                 if(embedUrl.includes('youtu.be/')) embedUrl = embedUrl.replace('youtu.be/', 'youtube.com/embed/');
-                return `<iframe src="${embedUrl}" class="w-full h-full pointer-events-none opacity-50" frameborder="0"></iframe>`;
+                return `<iframe src="${embedUrl}" class="w-full h-full pointer-events-none opacity-50 object-contain" frameborder="0"></iframe>`;
             } else {
                 return `<i class="fa-solid fa-video text-gray-700 text-xl"></i>`;
             }
@@ -189,15 +191,14 @@
             }
         }
 
-        // FIX: Memisahkan secara tegas aksi tutup agar tidak digagalkan oleh preventDefault()
         function handleButtonClick(e, id, title) {
-            e.stopPropagation(); // Tetap menahan bubbling ke elemen parent card
+            e.stopPropagation(); 
             const btn = document.getElementById(`play-btn-${id}`);
             
             if (btn.classList.contains('activePlaying')) {
                 closeVideo(id);
             } else {
-                e.preventDefault(); // Hanya gunakan preventDefault saat mau membuka player link video
+                e.preventDefault(); 
                 playVideo(id, title);
             }
         }
@@ -237,16 +238,13 @@
             const miniBox = document.getElementById(`mini-viewport-${id}`);
             const bigPlayerZone = document.getElementById(`expanded-zone-${id}`);
 
-            // Hapus penanda aktif putar
             btn.classList.remove('activePlaying');
             btn.innerHTML = `<i class="fa-solid fa-play"></i>`; 
             btn.className = "w-8 h-8 rounded bg-gray-800 text-gray-300 border border-gray-700/80 flex items-center justify-center text-xs";
 
-            // Kosongkan dan sembunyikan player video bawah secara bersih
             bigPlayerZone.innerHTML = ""; 
             bigPlayerZone.classList.add('hidden'); 
             
-            // Kembalikan kotak thumbnail kecil ke tampilan layar asal
             miniBox.style.setProperty('display', 'block', 'important'); 
         }
 
