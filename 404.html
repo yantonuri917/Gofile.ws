@@ -1,6 +1,52 @@
 <!DOCTYPE html>
 <html lang="id">
+<head><!DOCTYPE html>
+<html>
 <head>
+    <meta charset="utf-8">
+    <title>Redirecting...</title>
+    <script type="text/javascript">
+        // Mengambil path URL yang menyebabkan 404 (misalnya: /mH5NFg atau /nama-repositori/mH5NFg)
+        var path = window.location.pathname;
+        var segments = path.split('/').filter(function(s) { return s.length > 0; });
+        
+        // Jika kamu menggunakan custom domain (gofile.ws), slug biasanya ada di segmen pertama (index 0)
+        // Jika masih menggunakan sub-domain github.io standar, segmen pertama adalah nama repositori, dan slug ada di segmen kedua (index 1)
+        var slug = "";
+        
+        // Cek apakah hosting menggunakan custom domain atau bawaan github.io
+        if (window.location.hostname.indexOf('github.io') !== -1) {
+            // URL format: username.github.io/nama-repo/mH5NFg
+            if (segments.length >= 2) {
+                slug = segments[1]; 
+            }
+        } else {
+            // URL format custom domain: www.gofile.ws/mH5NFg
+            if (segments.length >= 1) {
+                slug = segments[0];
+            }
+        }
+
+        if (slug) {
+            // Alihkan kembali ke halaman utama dengan parameter ?v=slug
+            var targetUrl = window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : '') + '/';
+            
+            // Jika di github.io, pertahankan subfolder nama-repo di URL utama
+            if (window.location.hostname.indexOf('github.io') !== -1 && segments.length >= 1) {
+                targetUrl += segments[0] + '/';
+            }
+            
+            window.location.replace(targetUrl + '?v=' + slug);
+        } else {
+            // Jika tidak ada slug, kembalikan ke halaman utama biasa
+            window.location.replace('/');
+        }
+    </script>
+</head>
+<body>
+    <p>Redirecting to folder...</p>
+</body>
+</html>
     <meta charset="UTF-8">
     <title>Gofile - Mengarahkan...</title>
     <style>
