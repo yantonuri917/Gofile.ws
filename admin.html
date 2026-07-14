@@ -3,63 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Generate Link</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="/config.js"></script>
-    
-    <style>
-        body { font-family: sans-serif; background: #0f172a; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .box { width: 90%; max-width: 400px; background: #1e293b; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        h2 { text-align: center; margin-bottom: 25px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; box-sizing: border-box; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white; }
-        button { width: 100%; padding: 12px; background: #1d68d5; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        button:hover { background: #2563eb; }
-        #result { margin-top: 25px; padding: 15px; background: #0f172a; border-radius: 6px; display: none; }
-        #finalLink { background: #1e293b; border: 1px dashed #475569; }
-    </style>
 </head>
-<body>
+<body class="bg-slate-900 min-h-screen flex items-center justify-center p-6 text-slate-200">
 
-<div class="box">
-    <h2>Generate Link Video</h2>
-    <input type="text" id="vidUrl" placeholder="Masukkan URL Video (Direct/Embed)">
-    <button onclick="generateLink()">Generate Link</button>
+    <div class="bg-slate-800/50 backdrop-blur-lg p-8 rounded-2xl shadow-2xl border border-slate-700 w-full max-w-md">
+        <h2 class="text-2xl font-bold text-white mb-6 text-center">Generate Link</h2>
+        
+        <input type="text" id="destUrl" 
+            class="w-full bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 mb-4 focus:outline-none focus:border-blue-500 transition-all"
+            placeholder="Paste URL tujuan di sini...">
+        
+        <button onclick="generateLink()" 
+            class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl transition-all active:scale-95 shadow-lg shadow-blue-900/20">
+            Generate Link
+        </button>
 
-    <div id="result">
-        <p style="font-size: 0.9rem; margin-bottom: 5px; color: #94a3b8;">Link Berhasil Dibuat:</p>
-        <input type="text" id="finalLink" readonly onclick="this.select()">
+        <div id="result" class="hidden mt-6 p-4 bg-slate-900 rounded-xl border border-blue-500/30 text-center animate-in fade-in zoom-in duration-300">
+            <p class="text-xs text-blue-400 mb-1">Link berhasil dibuat:</p>
+            <a id="finalLink" href="#" target="_blank" class="text-blue-300 hover:text-white underline break-all"></a>
+        </div>
     </div>
-</div>
 
-<script>
-    // Inisialisasi Supabase
-    const client = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
-
-    async function generateLink() {
-        const url = document.getElementById('vidUrl').value;
-        if (!url) { alert("Harap masukkan URL video!"); return; }
-
-        // Membuat string acak 9 karakter (tanpa awalan v-)
-        const uniqueCode = Math.random().toString(36).substr(2, 6);
-
-        // Simpan ke Supabase
-        const { error } = await client.from('videos_list').insert([{ 
-            name: "Video Tanpa Judul", 
-            video_url: url, 
-            access_code: uniqueCode 
-        }]);
-
-        if (error) { 
-            alert("Gagal menyimpan ke database: " + error.message); 
-        } else {
-            // Generate link dengan format: domain.com/d/hurufacak.mp4
-            const link = window.location.origin + "/d/" + uniqueCode + ".mp4";
-            
-            document.getElementById('finalLink').value = link;
-            document.getElementById('result').style.display = 'block';
+    <script>
+        function generateRandomSlug(length = 5) {
+            const chars = 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            return Array.from({length}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
         }
-    }
-</script>
 
+        async function generateLink() {
+            const { URL, KEY } = window.API_CONFIG;
+            const dest = document.getElementById('destUrl').value;
+            const slug = generateRandomSlug();
+            const resDiv = document.getElementById('result');
+            const linkTag = document.getElementById('finalLink');
+
+            if(!dest) return alert("URL tidak boleh kosong!");
+
+            const response = await fetch(`${URL}/links`, {
+                method: 'POST',
+                headers: { 'apikey': KEY, 'Authorization': `Bearer ${KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+                body: JSON.stringify({ slug, destination: dest })
+            });
+
+            if (response.ok) {
+                const finalUrl = window.location.origin + "/d/" + slug;
+                linkTag.href = finalUrl;
+                linkTag.innerText = finalUrl;
+                resDiv.classList.remove('hidden');
+            } else {
+                alert("Gagal menyimpan ke database.");
+            }
+        }
+    </script>
 </body>
 </html>
