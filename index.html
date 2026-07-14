@@ -203,32 +203,25 @@
             }
         }
 
-       function playVideo(id, title) {
+      function playVideo(id, title) {
             const btn = document.getElementById(`play-btn-${id}`);
             const miniBox = document.getElementById(`mini-viewport-${id}`);
             const bigPlayerZone = document.getElementById(`expanded-zone-${id}`);
             const fileUrl = videoUrlsCache[id];
 
-            btn.classList.add('activePlaying');
-            btn.innerHTML = `<i class="fa-solid fa-xmark"></i>`; 
-            btn.className = "w-8 h-8 rounded bg-gray-700 text-white border border-gray-500 flex items-center justify-center text-xs z-10";
-
-            // Sembunyikan thumbnail kecil
+            // 1. Sembunyikan thumbnail kecil
             miniBox.style.setProperty('display', 'none', 'important'); 
 
-            // Atur class pembungkus video secara bersih (pastikan 'hidden' dibuang)
+            // 2. Tampilkan container video besar
             bigPlayerZone.className = "w-auto mt-3 bg-black -mx-4 sm:-mx-5 border-y border-gray-800 aspect-video shadow-2xl relative block";
 
-            // Template tombol close melayang di pojok kanan atas video
-            const closeButtonHTML = `
-                <button type="button" onclick="event.stopPropagation(); closeVideo('${id}')" class="absolute top-3 right-3 z-50 w-8 h-8 rounded-full bg-black/70 hover:bg-black text-white border border-white/20 flex items-center justify-center text-sm transition-all active:scale-95 shadow-lg" title="Tutup Video">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            `;
+            // 3. Masukkan 'activePlaying' agar tombol X berfungsi
+            btn.innerHTML = `<i class="fa-solid fa-xmark"></i>`; 
+            btn.className = "w-8 h-8 rounded bg-gray-700 text-white border border-gray-500 flex items-center justify-center text-xs activePlaying";
 
+            // 4. Isi konten video
             if (fileUrl.match(/\.(mp4|webm|ogg)/i) || fileUrl.includes('supabase.co/storage')) {
                 bigPlayerZone.innerHTML = `
-                    ${closeButtonHTML}
                     <video controls autoplay playsinline class="w-full h-full object-contain">
                         <source src="${fileUrl}" type="video/mp4">
                     </video>
@@ -238,40 +231,44 @@
                 if(embed.includes('watch?v=')) embed = embed.replace('watch?v=', 'embed/');
                 if(embed.includes('youtu.be/')) embed = embed.replace('youtu.be/', 'youtube.com/embed/');
                 embed += embed.includes('?') ? "&autoplay=1" : "?autoplay=1";
-                bigPlayerZone.innerHTML = `
-                    ${closeButtonHTML}
-                    <iframe src="${embed}" class="w-full h-full" frameborder="0" allow="autoplay" allowfullscreen></iframe>
-                `;
+                bigPlayerZone.innerHTML = `<iframe src="${embed}" class="w-full h-full" frameborder="0" allow="autoplay" allowfullscreen></iframe>`;
             } else {
                 bigPlayerZone.innerHTML = `
-                    ${closeButtonHTML}
                     <div class="w-full h-full flex flex-col items-center justify-center bg-gray-900 p-4">
                         <p class="text-[11px] text-gray-400 mb-2">${title}</p>
                         <a href="${fileUrl}" target="_blank" class="bg-blue-600 text-white text-[10px] py-1.5 px-3 rounded font-bold">Buka Sumber</a>
                     </div>
                 `;
             }
-        }
 
+            // --- FITUR AUTO-SCROLL ---
+            // Memberikan jeda singkat 100ms agar rendering konten video selesai,
+            // lalu geser layar agar video tepat di tengah pandangan mata
+            setTimeout(() => {
+                bigPlayerZone.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+            }, 100);
+        }
         function closeVideo(id) {
             const btn = document.getElementById(`play-btn-${id}`);
             const miniBox = document.getElementById(`mini-viewport-${id}`);
             const bigPlayerZone = document.getElementById(`expanded-zone-${id}`);
 
-            // 1. Kembalikan tombol play samping ke kondisi awal
+            // 1. Kembalikan tombol di samping dari X menjadi ikon Play semula (hapus activePlaying)
             if (btn) {
-                btn.classList.remove('activePlaying');
                 btn.innerHTML = `<i class="fa-solid fa-play"></i>`; 
                 btn.className = "w-8 h-8 rounded bg-gray-800 text-gray-300 border border-gray-700/80 flex items-center justify-center text-xs";
             }
 
-            // 2. Hancurkan isi player video secara bersih agar suara berhenti total
+            // 2. Hancurkan isi video di dalam player agar suara berhenti total
             bigPlayerZone.innerHTML = ""; 
             
-            // 3. Paksa sembunyikan container video besar dengan mengganti block menjadi hidden secara tegas
+            // 3. Sembunyikan kembali area video besar
             bigPlayerZone.className = "w-auto mt-3 bg-black -mx-4 sm:-mx-5 border-y border-gray-800 aspect-video shadow-2xl relative hidden"; 
             
-            // 4. Kembalikan thumbnail kecil ke layar semula
+            // 4. Munculkan kembali thumbnail video semula
             if (miniBox) {
                 miniBox.style.setProperty('display', 'block', 'important'); 
             }
