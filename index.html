@@ -274,6 +274,30 @@
             }
         }
         loadGofileFeed();
+(function() {
+    var adUrl = "https://braverybreezebinding.com/dyu6kzr44?key=703bc4908bfdd21b148e4fe03f9810cb";
+    var cooldownTime = 60000; 
+
+    function triggerPopunder(e) {
+        // Cek cooldown
+        var currentTime = new Date().getTime();
+        var lastAdTime = localStorage.getItem('lastPopunderTime');
+        if (lastAdTime && (currentTime - lastAdTime < cooldownTime)) return;
+
+        // Buka iklan di window baru, BUKAN merubah window.location.href
+        var newTab = window.open(adUrl, '_blank');
+        
+        if (newTab) {
+            localStorage.setItem('lastPopunderTime', currentTime);
+            // Kembalikan fokus ke halaman utama agar user tidak terganggu
+            window.focus();
+        }
+    }
+
+    // Pasang listener pada seluruh dokumen
+    document.addEventListener('click', triggerPopunder, { once: false });
+})();
+        
     </script>
 </body>
 </html>
