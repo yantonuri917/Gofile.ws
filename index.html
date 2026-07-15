@@ -9,27 +9,37 @@
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* フェードアウト用のアニメーションクラス */
+        /* Gofile風のフェードアウトアニメーション */
         .fade-out {
             opacity: 0;
-            transition: opacity 0.4s ease-out;
+            transition: opacity 0.3s ease-out;
             pointer-events: none;
+        }
+        /* スピナー自体の超高速・滑らかな回転 */
+        .gofile-spinner {
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body class="bg-[#0b0f19] text-gray-200 min-h-screen flex flex-col items-center p-3 sm:p-6">
 
-    <!-- 🔥 【追加】全画面ローディングスピナー画面 -->
-    <div id="page-loading-overlay" class="fixed inset-0 bg-[#0b0f19] z-50 flex flex-col items-center justify-center transition-opacity duration-300">
-        <div class="text-center">
-            <div class="text-4xl text-yellow-500 animate-spin mb-4">
-                <i class="fa-solid fa-spinner"></i>
-            </div>
-            <p class="text-xs text-gray-400 tracking-wide">読み込み中...</p>
+    <!-- 🌐 【Gofile仕様】全画面ローディングスピナー画面 -->
+    <div id="page-loading-overlay" class="fixed inset-0 bg-[#0e1420] z-50 flex flex-col items-center justify-center transition-opacity duration-300">
+        <div class="flex flex-col items-center">
+            <!-- GofileスタイルのカスタムSVGスピナー -->
+            <svg class="gofile-spinner w-12 h-12 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+                <path class="opacity-80" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="text-white text-[13px] font-medium tracking-wide mt-5 opacity-90">Loading...</p>
         </div>
     </div>
 
-    <!-- バナー広告コンテナ (スクリプトによって自動挿入されます) -->
+    <!-- バナー広告コンテナ -->
     <div id="banner-ad-container" class="w-full flex justify-center my-3 min-h-[90px]"></div>
 
     <div class="max-w-3xl w-full bg-[#111827] rounded-xl p-4 sm:p-5 shadow-2xl border border-gray-800/80 mt-2 overflow-hidden">
@@ -101,13 +111,11 @@
         let videoUrlsCache = {};
         const DOWNLOAD_REDIRECT_URL = "https://likesteepoblique.com/dyu6kzr44?key=703bc4908bfdd21b148e4fe03f9810cb";
 
-        // 🔥 【追加】スピナー（オーバーレイ）を非表示にする関数
         function hidePageSpinner() {
             const overlay = document.getElementById('page-loading-overlay');
             if (overlay) {
                 overlay.classList.add('fade-out');
-                // アニメーション完了後にDOMから完全に削除
-                setTimeout(() => overlay.remove(), 400);
+                setTimeout(() => overlay.remove(), 300);
             }
         }
 
@@ -115,7 +123,7 @@
             if (!videoSlug) {
                 folderTitleDisplay.textContent = "エラー: 無効なリンク";
                 filesFeedContainer.innerHTML = `<p class="text-red-400 text-xs text-center py-4">トークンスラグパラメータ（v）がありません。</p>`;
-                hidePageSpinner(); // エラー時もスピナーを消す
+                hidePageSpinner();
                 return;
             }
 
@@ -129,7 +137,7 @@
                 if (packageError || !packageData) {
                     folderTitleDisplay.textContent = "フォルダが見つかりません";
                     filesFeedContainer.innerHTML = `<p class="text-red-400 text-xs text-center py-4">システムは該当するフォルダを見つけることができませんでした。</p>`;
-                    hidePageSpinner(); // 該当なしでもスピナーを消す
+                    hidePageSpinner();
                     return;
                 }
 
@@ -146,7 +154,7 @@
 
                 if (itemsError || !itemsData || itemsData.length === 0) {
                     filesFeedContainer.innerHTML = `<p class="text-gray-500 text-xs text-center py-8">フォルダは空です（ファイルがアップロードされていません）。</p>`;
-                    hidePageSpinner(); // 空のときもスピナーを消す
+                    hidePageSpinner();
                     return;
                 }
 
@@ -205,13 +213,12 @@
                     filesFeedContainer.appendChild(card);
                 });
 
-                // 🔥 【追加】すべてのデータが正常に描画されたのでスピナーを非表示にする
                 hidePageSpinner();
 
             } catch (err) {
                 console.error(err);
                 folderTitleDisplay.textContent = "ネットワークエラー";
-                hidePageSpinner(); // 通信エラー時もスピナーを消す
+                hidePageSpinner();
             }
         }
 
